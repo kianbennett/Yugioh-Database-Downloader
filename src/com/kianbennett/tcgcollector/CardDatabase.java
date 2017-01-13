@@ -31,10 +31,15 @@ public class CardDatabase {
     private Gson gson;
     private JsonParser parser;
 
-    public CardDatabase(Date dateCreated, boolean min, String out) {
+    public CardDatabase(Date dateCreated, boolean min, boolean basic, String out) {
         this.dateCreated = dateCreated;
         cardList = new HashMap<>();
-        gson = new GsonBuilder().setPrettyPrinting().create();
+        if(min) {
+            gson = new Gson();
+        } else {
+            gson = new GsonBuilder().setPrettyPrinting().create();
+        }
+
         parser = new JsonParser();
 
         DecimalFormat df = new DecimalFormat();
@@ -45,7 +50,7 @@ public class CardDatabase {
 
             System.out.println(cardList.values().size() + " cards to load...");
 
-            if(!min) {
+            if(!basic) {
                 int cardsLoaded = 0;
                 for(int i = 0; i < (int) ((float) cardList.values().size() / 50f) + 1; i++) {
                     List<Card> cards = new ArrayList<>();

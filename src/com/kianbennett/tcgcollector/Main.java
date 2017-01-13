@@ -14,12 +14,17 @@ public class Main {
 
     public static void main(String[] args) {
         boolean min = false;
+        boolean basic = false;
         String out = "cards.json";
         String error = null;
         for(int a = 0; a < args.length; a++) {
             String arg = args[a];
-            if(arg.equals("-min")) {
+            if(arg.equals("-min") || arg.equals("-m")) {
                 min = true;
+                continue;
+            }
+            if(arg.equals("-basic") || arg.equals("-b")) {
+                basic = true;
                 continue;
             }
             if(arg.equals("-o")) {
@@ -31,11 +36,12 @@ public class Main {
                 } else {
                     error = "Use the output command -o <filename>";
                 }
+                continue;
             }
         }
 
         if(error == null) {
-            CardDatabase database = new CardDatabase(new Date(), min, out);
+            CardDatabase database = new CardDatabase(new Date(), min, basic, out);
         } else {
             System.err.println(error);
         }

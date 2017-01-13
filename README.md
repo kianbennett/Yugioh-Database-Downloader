@@ -4,8 +4,10 @@ Downloads information about each TCG Yugioh card from the Yugioh wiki and packag
 ## Usage
 
 Using the `run` batch file will generate a complete list of cards with all details.
-The option `-min` will limit the list to just the page id, card title and wiki url extension (Much faster).
-`-o <filename>` can be used to specify the output file.
+
+Use `-basic` or `-b` to limit the list to just the page id, card title and wiki url extension (much faster).
+Use `-min` or `-m` to generate a minified json file (smaller file size).
+Use `-o <filename>` to specify the output file.
 
 ## Card Details
 

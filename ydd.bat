@@ -1,1 +1,1 @@
-java -jar "TCG Collector.jar" %*
+java -jar "ydd.jar" %*
