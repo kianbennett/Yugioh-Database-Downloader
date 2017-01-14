@@ -33,9 +33,10 @@ public class Card {
     public String image;
     public String lore;
     public String attribute;
-    public String archetype, archetypeRelated;
+    public String[] archetypes;
+    public String archetypeRelated;
     public String action;
-    public String type1, type2, type3;
+    public String[] types;
     public String level;
     public String atk;
     public String def;

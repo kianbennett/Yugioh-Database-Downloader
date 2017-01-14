@@ -131,7 +131,20 @@ public class CardDatabase {
             if(table.hasProperty("lore")) card.lore = table.getProperty("lore").value;
             if(table.hasProperty("image")) card.image = table.getProperty("image").value;
             if(table.hasProperty("attribute")) card.attribute = table.getProperty("attribute").value;
-            if(table.hasProperty("archseries")) card.archetype = table.getProperty("archseries").value;
+
+            List<String> listArchseries = new ArrayList<>();
+            if(table.hasProperty("archseries")) {
+                String archseries = table.getProperty("archseries").value;
+                if(archseries.isEmpty()) {
+                    for(int l = 0; l < table.getProperty("archseries").lists.size(); l++) {
+                        listArchseries.add(table.getProperty("archseries").lists.get(l).value);
+                    }
+                } else {
+                    listArchseries.add(archseries);
+                }
+            }
+            card.archetypes = listArchseries.toArray(new String[] {});
+
             if(table.hasProperty("related_to_archseries")) card.archetypeRelated = table.getProperty("related_to_archseries").value;
             if(table.hasProperty("action")) card.action = table.getProperty("action").value;
 
@@ -142,11 +155,13 @@ public class CardDatabase {
                 if(!table.getProperty("number").value.isEmpty()) card.number = table.getProperty("number").value.replaceAll("\\D+","");
             }
 
-            if(table.hasProperty("type")) card.type1 = table.getProperty("type").value;
-            if(table.hasProperty("type1")) card.type1 = table.getProperty("type1").value;
-            if(table.hasProperty("type2")) card.type2 = table.getProperty("type2").value;
-            if(table.hasProperty("type3")) card.type3 = table.getProperty("type3").value;
-            if(table.hasProperty("typest")) card.type1 = table.getProperty("typest").value;
+            List<String> listTypes = new ArrayList<>();
+            if(table.hasProperty("type")) listTypes.add(table.getProperty("type").value);
+            if(table.hasProperty("typest")) listTypes.add(table.getProperty("typest").value);
+            if(table.hasProperty("type1")) listTypes.add(table.getProperty("type1").value);
+            if(table.hasProperty("type2")) listTypes.add(table.getProperty("type2").value);
+            if(table.hasProperty("type3")) listTypes.add(table.getProperty("type3").value);
+            if(listTypes.size() > 0) card.types = listTypes.toArray(new String[] {});
 
             if(table.hasProperty("fm")) card.fm = table.getProperty("fm").value;
             if(table.hasProperty("effect_types")) {
