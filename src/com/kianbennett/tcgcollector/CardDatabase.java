@@ -26,14 +26,14 @@ public class CardDatabase {
     }
 
     public Date dateCreated;
-    public Map<Integer, Card> cardList; // Dictionary of cards using the card id as a key
+    public List<Card> cardList; // Dictionary of cards using the card id as a key
 
     private Gson gson;
     private JsonParser parser;
 
     public CardDatabase(Date dateCreated, boolean min, boolean basic, String out) {
         this.dateCreated = dateCreated;
-        cardList = new HashMap<>();
+        cardList = new ArrayList<>();
         if(min) {
             gson = new Gson();
         } else {
@@ -48,14 +48,14 @@ public class CardDatabase {
         try {
             getCardList();
 
-            System.out.println(cardList.values().size() + " cards to load...");
+            System.out.println(cardList.size() + " cards to load...");
 
             if(!basic) {
                 int cardsLoaded = 0;
-                for(int i = 0; i < (int) ((float) cardList.values().size() / 50f) + 1; i++) {
+                for(int i = 0; i < (int) ((float) cardList.size() / 50f) + 1; i++) {
                     List<Card> cards = new ArrayList<>();
                     for(int c = i * 50; c < i * 50 + 50; c++) {
-                        if(c < cardList.values().size()) {
+                        if(c < cardList.size()) {
                             cards.add(getCardFromIndex(c));
                         }
                     }
@@ -66,13 +66,15 @@ public class CardDatabase {
                         getCardTips(cards);
                         cardsLoaded += cards.size();
                         long timeFinished = new Date().getTime();
-                        System.out.println("Loaded " + cardsLoaded + "/" + cardList.values().size() + " cards [" + df.format((float) (timeFinished - timeStart) / 1000f) + "s]");
+                        System.out.println("Loaded " + cardsLoaded + "/" + cardList.size() + " cards [" + df.format((float) (timeFinished - timeStart) / 1000f) + "s]");
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Collections.sort(cardList);
 
         String json = writeJson();
 
@@ -100,7 +102,7 @@ public class CardDatabase {
             String title = items.get(i).getAsJsonObject().get("title").getAsString();
             String wikiUrl = items.get(i).getAsJsonObject().get("url").getAsString();
             if(!title.contains("(temp)")) {
-                cardList.put(id, new Card(id, title, wikiUrl));
+                cardList.add(new Card(id, title, wikiUrl));
             }
         }
     }
@@ -132,21 +134,22 @@ public class CardDatabase {
             if(table.hasProperty("image")) card.image = table.getProperty("image").value;
             if(table.hasProperty("attribute")) card.attribute = table.getProperty("attribute").value;
 
-            List<String> listArchseries = new ArrayList<>();
             if(table.hasProperty("archseries")) {
-                String archseries = table.getProperty("archseries").value;
-                if(archseries.isEmpty()) {
-                    for(int l = 0; l < table.getProperty("archseries").lists.size(); l++) {
-                        listArchseries.add(table.getProperty("archseries").lists.get(l).value);
-                    }
-                } else {
-                    listArchseries.add(archseries);
-                }
+                String[] array = listPropertyToStrings(table.getProperty("archseries"));
+                if(array.length > 0) card.archetypes = array;
             }
-            card.archetypes = listArchseries.toArray(new String[] {});
-
-            if(table.hasProperty("related_to_archseries")) card.archetypeRelated = table.getProperty("related_to_archseries").value;
-            if(table.hasProperty("action")) card.action = table.getProperty("action").value;
+            if(table.hasProperty("related_to_archseries")) {
+                String[] array = listPropertyToStrings(table.getProperty("related_to_archseries"));
+                if(array.length > 0) card.archetypesRelated = array;
+            }
+            if(table.hasProperty("supports_archetypes")) {
+                String[] array = listPropertyToStrings(table.getProperty("supports_archetypes"));
+                if(array.length > 0) card.archetypesSupports = array;
+            }
+            if(table.hasProperty("action")) {
+                String[] array = listPropertyToStrings(table.getProperty("action"));
+                if(array.length > 0) card.actions = array;
+            }
 
             if(table.hasProperty("level")) card.level = table.getProperty("level").value;
             if(table.hasProperty("atk")) card.atk = table.getProperty("atk").value;
@@ -276,18 +279,18 @@ public class CardDatabase {
     }
 
     private String writeJson() {
-        CardDatabaseJson cards = new CardDatabaseJson(dateCreated, cardList.values().toArray());
+        CardDatabaseJson cards = new CardDatabaseJson(dateCreated, cardList.toArray());
         String json = gson.toJson(cards);
 
         return json;
     }
 
     public Card getCardFromIndex(int i) {
-        return ((Card) cardList.values().toArray()[i]);
+        return ((Card) cardList.toArray()[i]);
     }
 
     public Card getCardFromTitle(String title) {
-        for(int i = 0; i < cardList.values().size(); i++) {
+        for(int i = 0; i < cardList.size(); i++) {
             Card card = getCardFromIndex(i);
             if(card.title.equals(title)) return card;
         }
@@ -313,5 +316,18 @@ public class CardDatabase {
         if(subLists.size() == 0) subLists = null;
         Card.PropertyListValue value = new Card.PropertyListValue(listProperty.value, subLists);
         return value;
+    }
+
+    private String[] listPropertyToStrings(WikitextObject.TableProperty property) {
+        List<String> list = new ArrayList<>();
+        String value = property.value;
+        if(value.isEmpty()) {
+            for(int l = 0; l < property.lists.size(); l++) {
+                list.add(property.lists.get(l).value);
+            }
+        } else {
+            list.add(value);
+        }
+        return list.toArray(new String[] {});
     }
 }

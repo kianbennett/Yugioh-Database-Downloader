@@ -17,8 +17,8 @@ The following details are available for each card:
 * Wiki URL Extension
 * Image URL
 * Description/Effect
-* Archetype
-* Action
+* Archetype(s)
+* Action(s)
 * Type(s)
 * Level
 * ATK
