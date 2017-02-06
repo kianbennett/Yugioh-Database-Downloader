@@ -162,9 +162,51 @@ public class WikitextObject {
                     recentLists.put(level, (ListProperty) property);
                 }
 
-//                System.out.println(propertyCurrent.key + " = " + propertyCurrent.value);
-
                 parsePropertyValue(property);
+            }
+
+            if(line.startsWith("'''")) { // Special case scenario - some sets have their table info in this weird format
+                TableProperty prop1 = new TableProperty(), prop2 = new TableProperty(), prop3 = new TableProperty();
+
+                String[] split = line.split(Pattern.quote("("));
+                prop1.value = split[0].replace("'''", "").trim();
+                if(split.length > 1) {
+                    String[] minusSplit = split[1].split(" - ");
+                    prop2.value = minusSplit[0].replace(")", "").trim();
+                    if(minusSplit.length > 1) {
+                        prop3.value = minusSplit[1].replace(")", "").trim();
+                    }
+                }
+
+                Table table = new Table();
+
+                if(!prop1.value.equals("")) {
+                    parsePropertyValue(prop1);
+                    prop1.key = prop1.value;
+                    prop1.value = "";
+                    table.properties.add(prop1);
+                }
+                if(!prop2.value.equals("")) {
+                    parsePropertyValue(prop2);
+                    prop2.key = prop2.value;
+                    prop2.value = "";
+                    table.properties.add(prop2);
+                }
+                if(!prop3.value.equals("")) {
+                    parsePropertyValue(prop3);
+                    prop3.key = prop3.value;
+                    prop3.value = "";
+                    if(prop3.key.equals("C")) prop3.key = "Common";
+                    table.properties.add(prop3);
+                }
+
+                if(table.properties.size() > 0) {
+                    if(propertyCurrent != null) {
+                        propertyCurrent.tables.add(table);
+                    } else {
+                        tables.add(table);
+                    }
+                }
             }
         }
     }

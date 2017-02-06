@@ -52,7 +52,7 @@ public class Card implements Comparable<Card> {
     public String imageUrl;
     public List<PropertyListValue> tips, tipsTraditional;
     public String statusOcg, statusTcgAdv, statusTcgTrad;
-    public List<CardSet> setsEn;
+    public List<CardSet> sets;
 
     public Card(int id, String title, String wikiUrl) {
         this.id = id;

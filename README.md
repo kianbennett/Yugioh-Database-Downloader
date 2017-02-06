@@ -30,4 +30,4 @@ The following details are available for each card:
 * Pendulum Effect
 * Tips
 * Status
-* Sets (English)
+* Sets (English/NA)
