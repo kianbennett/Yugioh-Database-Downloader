@@ -188,46 +188,11 @@ public class CardDatabase {
             if(table.hasProperty("adv")) card.statusTcgAdv = table.getProperty("adv").value;
             if(table.hasProperty("trad")) card.statusTcgTrad = table.getProperty("trad").value;
 
-            if(table.hasProperty("en_sets") || table.hasProperty("na_sets")) {
+            if(table.hasProperty("en_sets") || table.hasProperty("na_sets") || table.hasProperty("eu_sets")) {
                 List<Card.CardSet> cardSets = new ArrayList<>();
-                if(table.hasProperty("en_sets")) {
-                    for(int s = 0; s < table.getProperty("en_sets").tables.size(); s++) {
-                        WikitextObject.Table setTable = table.getProperty("en_sets").tables.get(s);
-                        if(setTable.name.equals("Card table set")) {
-                            Card.CardSet cardSet = new Card.CardSet(null, null, null);
-                            if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
-                            if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key;
-                            if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
-                            cardSets.add(cardSet);
-                        }
-                        if(setTable.name.equals("")) {
-                            Card.CardSet cardSet = new Card.CardSet(null, null, null);
-                            if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
-                            if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key;
-                            if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
-                            cardSets.add(cardSet);
-                        }
-                    }
-                }
-                if(table.hasProperty("na_sets")) {
-                    for(int s = 0; s < table.getProperty("na_sets").tables.size(); s++) {
-                        WikitextObject.Table setTable = table.getProperty("na_sets").tables.get(s);
-                        if(setTable.name.equals("Card table set")) {
-                            Card.CardSet cardSet = new Card.CardSet(null, null, null);
-                            if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
-                            if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key + " (NA)";
-                            if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
-                            cardSets.add(cardSet);
-                        }
-                        if(setTable.name.equals("")) {
-                            Card.CardSet cardSet = new Card.CardSet(null, null, null);
-                            if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
-                            if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key + " (NA)";
-                            if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
-                            cardSets.add(cardSet);
-                        }
-                    }
-                }
+                cardSets.addAll(getCardSets(table, "en_sets", ""));
+                cardSets.addAll(getCardSets(table, "na_sets", " (NA)"));
+                cardSets.addAll(getCardSets(table, "eu_sets", " (EU)"));
                 if(cardSets.size() > 0) card.sets = cardSets;
             }
         }
@@ -303,6 +268,32 @@ public class CardDatabase {
                 }
             }
         }
+    }
+
+    private List<Card.CardSet> getCardSets(WikitextObject.Table table, String name, String setNameSuffix) {
+        List<Card.CardSet> cardSets = new ArrayList<>();
+
+        if(table.hasProperty(name)) {
+            for(int s = 0; s < table.getProperty(name).tables.size(); s++) {
+                WikitextObject.Table setTable = table.getProperty(name).tables.get(s);
+                if(setTable.name.equals("Card table set")) {
+                    Card.CardSet cardSet = new Card.CardSet(null, null, null);
+                    if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
+                    if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key + setNameSuffix;
+                    if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
+                    cardSets.add(cardSet);
+                }
+                if(setTable.name.equals("")) {
+                    Card.CardSet cardSet = new Card.CardSet(null, null, null);
+                    if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
+                    if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key + setNameSuffix;
+                    if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
+                    cardSets.add(cardSet);
+                }
+            }
+        }
+
+        return cardSets;
     }
 
     private String writeJson() {
