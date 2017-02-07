@@ -285,8 +285,8 @@ public class CardDatabase {
                 }
                 if(setTable.name.equals("")) {
                     Card.CardSet cardSet = new Card.CardSet(null, null, null);
-                    if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(0).key;
-                    if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(1).key + setNameSuffix;
+                    if(setTable.properties.size() >= 1) cardSet.number = setTable.properties.get(1).key;
+                    if(setTable.properties.size() >= 2) cardSet.setName = setTable.properties.get(0).key + setNameSuffix;
                     if(setTable.properties.size() >= 3) cardSet.rarity = setTable.properties.get(2).key;
                     cardSets.add(cardSet);
                 }
