@@ -8,6 +8,7 @@ Using the `run` batch file will generate a complete list of cards with all detai
 * Use `-basic` or `-b` to limit the list to just the page id, card title and wiki url extension (much faster).
 * Use `-min` or `-m` to generate a minified json file (smaller file size).
 * Use `-o <filename>` to specify the output file.
+* Use `-img` to download card images (around 4.5gb as of April 2017).
 
 ## Card Details
 

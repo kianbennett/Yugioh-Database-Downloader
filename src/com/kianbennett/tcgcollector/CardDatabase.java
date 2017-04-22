@@ -4,10 +4,7 @@ import com.google.gson.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -30,7 +27,7 @@ public class CardDatabase {
     private Gson gson;
     private JsonParser parser;
 
-    public CardDatabase(Date dateCreated, boolean min, boolean basic, String out) {
+    public CardDatabase(Date dateCreated, boolean min, boolean basic, String out, boolean img) {
         this.dateCreated = dateCreated;
         cardList = new ArrayList<>();
         if(min) {
@@ -44,16 +41,21 @@ public class CardDatabase {
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(1);
 
+        if(img) new File("Card Images").mkdir();
+
         try {
             getCardList();
 
             System.out.println(cardList.size() + " cards to load...");
 
+            int interval = 50;
+            if(img) interval = 10;
+
             if(!basic) {
                 int cardsLoaded = 0;
-                for(int i = 0; i < (int) ((float) cardList.size() / 50f) + 1; i++) {
+                for(int i = 0; i < (int) ((float) cardList.size() / interval) + 1; i++) {
                     List<Card> cards = new ArrayList<>();
-                    for(int c = i * 50; c < i * 50 + 50; c++) {
+                    for(int c = i * interval; c < i * interval + interval; c++) {
                         if(c < cardList.size()) {
                             cards.add(getCardFromIndex(c));
                         }
@@ -61,7 +63,7 @@ public class CardDatabase {
                     if(cards.size() > 0) {
                         long timeStart = new Date().getTime();
                         getCardDetails(cards);
-                        getCardImageUrls(cards);
+                        getCardImageUrls(cards, img);
                         getCardTips(cards);
                         cardsLoaded += cards.size();
                         long timeFinished = new Date().getTime();
@@ -198,7 +200,7 @@ public class CardDatabase {
         }
     }
 
-    private void getCardImageUrls(List<Card> cards) throws IOException {
+    private void getCardImageUrls(List<Card> cards, boolean download) throws IOException {
         String url = "http://yugioh.wikia.com/api.php?format=json&action=query&titles=";
         for(int i = 0; i < cards.size(); i++) {
             if(i != 0) url += "|";
@@ -210,12 +212,13 @@ public class CardDatabase {
         JsonObject jsonObj = parser.parse(json).getAsJsonObject();
         JsonObject pages = jsonObj.getAsJsonObject("query").getAsJsonObject("pages");
 
-        Set<Map.Entry<String, JsonElement>> entries = pages.entrySet();//will return members of your object
+        Set<Map.Entry<String, JsonElement>> entries = pages.entrySet();
         for (Map.Entry<String, JsonElement> entry : entries) {
             JsonObject page = entry.getValue().getAsJsonObject();
             String pageTitle = page.get("title").getAsString();
             for(int i = 0; i < cards.size(); i++) {
                 if(pageTitle.equals("File:" + cards.get(i).image)) {
+                    if(page.get("imageinfo") == null) continue;
                     cards.get(i).imageUrl = page.get("imageinfo").getAsJsonArray().get(0).getAsJsonObject().get("url").getAsString();
                     if(cards.get(i).imageUrl.contains(".png")) {
                         cards.get(i).imageUrl = cards.get(i).imageUrl.substring(0, cards.get(i).imageUrl.lastIndexOf(".png")) + ".png";
@@ -223,6 +226,23 @@ public class CardDatabase {
                     if(cards.get(i).imageUrl.contains(".jpg")) {
                         cards.get(i).imageUrl = cards.get(i).imageUrl.substring(0, cards.get(i).imageUrl.lastIndexOf(".jpg")) + ".jpg";
                     }
+
+                    if(download) {
+                        URL imgUrl = new URL(cards.get(i).imageUrl);
+                        try {
+                            InputStream in = new BufferedInputStream(imgUrl.openStream());
+                            OutputStream out = new BufferedOutputStream(new FileOutputStream("Card Images/" + cards.get(i).image));
+
+                            for (int r; (r = in.read()) != -1;) {
+                                out.write(r);
+                            }
+                            in.close();
+                            out.close();
+                        } catch(Exception e) {
+                            System.out.println("Unable to reach image file for '" + cards.get(i).title + "' (" + e.getMessage() + ")");
+                        }
+                    }
+
                     break;
                 }
             }

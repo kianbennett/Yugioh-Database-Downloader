@@ -15,6 +15,7 @@ public class Main {
     public static void main(String[] args) {
         boolean min = false;
         boolean basic = false;
+        boolean img = false;
         String out = "cards.json";
         String error = null;
         for(int a = 0; a < args.length; a++) {
@@ -38,10 +39,14 @@ public class Main {
                 }
                 continue;
             }
+            if(arg.equals("-img")) {
+                img = true;
+                continue;
+            }
         }
 
         if(error == null) {
-            CardDatabase database = new CardDatabase(new Date(), min, basic, out);
+            new CardDatabase(new Date(), min, basic, out, img);
         } else {
             System.err.println(error);
         }
